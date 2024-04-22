@@ -10,6 +10,7 @@ public class Util {
     private static final String PASSWORD = "1mkr26kv22";
 
     private static Connection connection = null;
+
     public static Connection getConnection() {
         try {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
@@ -19,7 +20,8 @@ public class Util {
         }
         return connection;
     }
-    public static void connectionIsClosed(){
+
+    public static void connectionIsClosed() {
         try {
             connection.close();
             System.out.println("Соединение успешно закрыто.");

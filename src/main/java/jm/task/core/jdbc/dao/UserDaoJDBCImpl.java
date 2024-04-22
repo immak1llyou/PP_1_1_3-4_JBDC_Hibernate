@@ -8,17 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private static final String quary = "USE katadb";
-    private static final String quary1 = "CREATE TABLE IF NOT EXISTS Users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), lastname VARCHAR(255), age TINYINT)";
-    private static final String quary2 = "DROP TABLE Users";
-    private static final String quary3 = "INSERT INTO Users VALUES (?, ?, ?, ?)";
-    private static final String quary4 = "DELETE FROM Users WHERE id = ?";
-    private static final String quary5 = "TRUNCATE TABLE Users";
-    private static final String quary6 = "SHOW TABLES LIKE 'Users'";
 
-    private List<User> userList = new ArrayList<>();
-
-    Connection connection;
+    private static final String quaryCreateTable = "CREATE TABLE IF NOT EXISTS Users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), lastname VARCHAR(255), age TINYINT)";
+    private static final String quaryDropTable = "DROP TABLE IF EXISTS Users";
+    private static final String quaryInsertUser = "INSERT INTO Users VALUES (id, ?, ?, ?)";
+    private static final String quaryDeleteUser = "DELETE FROM Users WHERE id = ?";
+    private static final String quaryCleanTable = "TRUNCATE TABLE Users";
+    private static final String quaryGetUser = "SELECT * FROM Users";
+    private Connection connection;
 
     public UserDaoJDBCImpl() {
         connection = Util.getConnection();
@@ -26,11 +23,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void createUsersTable() {
         try {
-            ResultSet resultSet = connection.createStatement().executeQuery(quary6);
-            if (!resultSet.next()) {
-                connection.createStatement().execute(quary);
-                connection.createStatement().execute(quary1);
-            }
+            connection.createStatement().execute(quaryCreateTable);
         } catch (SQLException e) {
             System.err.println("Ошибка создания таблицы\n" + e);
         }
@@ -38,24 +31,22 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
         try {
-            ResultSet resultSet = connection.createStatement().executeQuery(quary6);
-            if (!resultSet.next()) {
-                connection.createStatement().execute(quary2);
-            }
+            connection.createStatement().execute(quaryDropTable);
         } catch (SQLException e) {
             System.err.println("Ошибка удаления таблицы\n" + e);
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        userList.add(new User(name,lastName,age));
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(quary3);
-            preparedStatement.setInt(1, 1);
-            preparedStatement.setString(2, name);
-            preparedStatement.setString(3, lastName);
-            preparedStatement.setByte(4, age);
-            System.out.println("User с именем — " + name + " добавлен в базу данных");
+            PreparedStatement preparedStatement = connection.prepareStatement(quaryInsertUser);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("User с именем — " + name + " добавлен в базу данных");
+            }
         } catch (SQLException e) {
             System.err.println("Ошибка сохранения пользователя с именем " + name + "\n" + e);
         }
@@ -63,7 +54,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void removeUserById(long id) {
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(quary4);
+            PreparedStatement preparedStatement = connection.prepareStatement(quaryDeleteUser);
             preparedStatement.setLong(1, id);
         } catch (SQLException e) {
             System.err.println("Ошибка удаления User'a с id = " + id + "\n" + e);
@@ -71,13 +62,22 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public List<User> getAllUsers() {
-        return userList;
+        List<User> userList = new ArrayList<>();
+        try {
+            ResultSet resultSet = connection.createStatement().executeQuery(quaryGetUser);
+            while (resultSet.next()) {
+                userList.add(new User(resultSet.getString("name"), resultSet.getString("lastname"), resultSet.getByte("age")));
+            }
+            return userList;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
+
     public void cleanUsersTable() {
         try {
             if (!getAllUsers().isEmpty()) {
-                connection.createStatement().execute(quary5);
-                userList.removeAll(userList);
+                connection.createStatement().execute(quaryCleanTable);
             }
         } catch (SQLException e) {
             System.err.println("Ошибка очистки таблицы\n" + e);
