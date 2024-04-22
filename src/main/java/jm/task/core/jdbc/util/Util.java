@@ -23,8 +23,11 @@ public class Util {
 
     public static void connectionIsClosed() {
         try {
-            connection.close();
-            System.out.println("Соединение успешно закрыто.");
+            if (!connection.isClosed() && connection != null) {
+                connection.close();
+                connection = null;
+                System.out.println("Соединение успешно закрыто.");
+            }
         } catch (SQLException e) {
             System.err.println("Ошибка закрытия соединения\n" + e);
         }
