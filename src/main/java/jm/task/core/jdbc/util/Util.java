@@ -1,5 +1,30 @@
 package jm.task.core.jdbc.util;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 public class Util {
-    // реализуйте настройку соеденения с БД
+    private static final String URL = "jdbc:mysql://localhost:3306/katadb";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "1mkr26kv22";
+
+    private static Connection connection = null;
+    public static Connection getConnection() {
+        try {
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("Соединение успешно установлено.");
+        } catch (SQLException e) {
+            System.err.println("Не удалось загрузить класс драйвера!");
+        }
+        return connection;
+    }
+    public static void connectionIsClosed(){
+        try {
+            connection.close();
+            System.out.println("Соединение успешно закрыто.");
+        } catch (SQLException e) {
+            System.err.println("Ошибка закрытия соединения\n" + e);
+        }
+    }
 }
