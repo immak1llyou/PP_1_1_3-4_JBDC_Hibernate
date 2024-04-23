@@ -15,14 +15,13 @@ public class UserDaoJDBCImpl implements UserDao {
     private static final String quaryDeleteUser = "DELETE FROM Users WHERE id = ?";
     private static final String quaryCleanTable = "TRUNCATE TABLE Users";
     private static final String quaryGetUser = "SELECT * FROM Users";
-    private Connection connection;
 
     public UserDaoJDBCImpl() {
-        connection = Util.getConnection();
     }
 
     public void createUsersTable() {
-        try {
+        try (Connection connection = Util.getConnection()) {
+            assert connection != null;
             connection.createStatement().execute(quaryCreateTable);
         } catch (SQLException e) {
             System.err.println("Ошибка создания таблицы\n" + e);
@@ -30,7 +29,8 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        try {
+        try (Connection connection = Util.getConnection()) {
+            assert connection != null;
             connection.createStatement().execute(quaryDropTable);
         } catch (SQLException e) {
             System.err.println("Ошибка удаления таблицы\n" + e);
@@ -38,7 +38,8 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        try {
+        try (Connection connection = Util.getConnection()) {
+            assert connection != null;
             PreparedStatement preparedStatement = connection.prepareStatement(quaryInsertUser);
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
@@ -53,7 +54,8 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) {
-        try {
+        try (Connection connection = Util.getConnection()) {
+            assert connection != null;
             PreparedStatement preparedStatement = connection.prepareStatement(quaryDeleteUser);
             preparedStatement.setLong(1, id);
         } catch (SQLException e) {
@@ -63,7 +65,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
-        try {
+        try (Connection connection = Util.getConnection()) {
+            assert connection != null;
             ResultSet resultSet = connection.createStatement().executeQuery(quaryGetUser);
             while (resultSet.next()) {
                 userList.add(new User(resultSet.getString("name"), resultSet.getString("lastname"), resultSet.getByte("age")));
@@ -75,7 +78,9 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void cleanUsersTable() {
-        try {
+        try (Connection connection = Util.getConnection()) {
+            assert connection != null;
+            connection.createStatement().execute(quaryCleanTable);
             if (!getAllUsers().isEmpty()) {
                 connection.createStatement().execute(quaryCleanTable);
             }

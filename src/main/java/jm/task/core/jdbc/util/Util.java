@@ -14,22 +14,22 @@ public class Util {
     public static Connection getConnection() {
         try {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            System.out.println("Соединение успешно установлено.");
+            return connection;
         } catch (SQLException e) {
             System.err.println("Не удалось загрузить класс драйвера!");
         }
-        return connection;
+        return null;
     }
 
-    public static void connectionIsClosed() {
-        try {
-            if (!connection.isClosed() && connection != null) {
-                connection.close();
-                connection = null;
-                System.out.println("Соединение успешно закрыто.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Ошибка закрытия соединения\n" + e);
-        }
-    }
+//    public static void connectionIsClosed() {
+//        try {
+//            if (!connection.isClosed() && connection != null) {
+//                connection.close();
+//                connection = null;
+//                System.out.println("Соединение успешно закрыто.");
+//            }
+//        } catch (SQLException e) {
+//            System.err.println("Ошибка закрытия соединения\n" + e);
+//        }
+//    }
 }
